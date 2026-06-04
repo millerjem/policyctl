@@ -55,6 +55,40 @@ func RunChecksWithProgress(ctx context.Context, checks []Check, simulator Simula
 	return results, nil
 }
 
+func RunCheckGroupsWithProgress(ctx context.Context, groups []CheckGroup, simulator Simulator, progress ProgressFunc) ([]ResultGroup, error) {
+	total := 0
+	for _, group := range groups {
+		total += len(group.Checks)
+	}
+	if progress != nil {
+		progress(0, total)
+	}
+
+	done := 0
+	resultGroups := make([]ResultGroup, 0, len(groups))
+	for _, group := range groups {
+		results := make([]Result, 0, len(group.Checks))
+		for _, check := range group.Checks {
+			result, err := simulator.Simulate(ctx, check)
+			if err != nil {
+				return nil, err
+			}
+			results = append(results, result)
+			done++
+			if progress != nil {
+				progress(done, total)
+			}
+		}
+
+		resultGroups = append(resultGroups, ResultGroup{
+			Title:   group.Title,
+			Source:  group.Source,
+			Results: results,
+		})
+	}
+	return resultGroups, nil
+}
+
 func (s AWSSimulator) Simulate(ctx context.Context, check Check) (Result, error) {
 	args := []string{"iam"}
 	if s.PolicySourceARN != "" {

@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"policyctl/internal/audit"
@@ -15,6 +16,22 @@ type exitCode int
 
 func (e exitCode) Error() string {
 	return fmt.Sprintf("exit code %d", e)
+}
+
+type checksFlag []string
+
+func (f *checksFlag) Set(value string) error {
+	for _, path := range strings.Split(value, ",") {
+		path = strings.TrimSpace(path)
+		if path != "" {
+			*f = append(*f, path)
+		}
+	}
+	return nil
+}
+
+func (f checksFlag) String() string {
+	return strings.Join(f, ",")
 }
 
 func main() {
@@ -30,7 +47,7 @@ func main() {
 
 func run() error {
 	var (
-		checksPath      string
+		checksPaths     checksFlag
 		policySourceARN string
 		policyDocument  string
 		awsCLI          string
@@ -46,7 +63,7 @@ func run() error {
 		timeout         time.Duration
 	)
 
-	flag.StringVar(&checksPath, "checks", "", "JSON file containing permission checks")
+	flag.Var(&checksPaths, "checks", "JSON file containing permission checks; repeat this flag or use comma-separated files")
 	flag.StringVar(&policySourceARN, "policy-source-arn", "", "IAM user, group, or role ARN to simulate with aws iam simulate-principal-policy")
 	flag.StringVar(&policyDocument, "policy-document", "", "IAM policy document JSON to simulate with aws iam simulate-custom-policy")
 	flag.StringVar(&awsCLI, "aws-cli", "aws", "AWS CLI binary")
@@ -62,7 +79,7 @@ func run() error {
 	flag.DurationVar(&timeout, "timeout", 5*time.Minute, "overall command timeout")
 	flag.Parse()
 
-	if checksPath == "" {
+	if len(checksPaths) == 0 {
 		return errors.New("--checks is required")
 	}
 	if (policySourceARN == "") == (policyDocument == "") {
@@ -99,7 +116,7 @@ func run() error {
 		}
 	}
 
-	checks, err := audit.LoadChecks(checksPath, vars)
+	checkGroups, err := audit.LoadCheckGroups(checksPaths, vars)
 	if err != nil {
 		return err
 	}
@@ -120,13 +137,13 @@ func run() error {
 	}
 	defer spinner.Stop()
 
-	results, err := audit.RunChecksWithProgress(ctx, checks, simulator, spinner.ProgressFunc())
+	resultGroups, err := audit.RunCheckGroupsWithProgress(ctx, checkGroups, simulator, spinner.ProgressFunc())
 	if err != nil {
 		return err
 	}
 	spinner.Stop()
 
-	allPassed := audit.AllSatisfied(results)
+	allPassed := audit.AllGroupsSatisfied(resultGroups)
 
 	switch output {
 	case "bool":
@@ -140,8 +157,22 @@ func run() error {
 		return fmt.Errorf("unsupported --output %q; use table or bool", output)
 	}
 
-	rows := audit.RowsFromResults(results, failuresOnly)
-	if len(rows) == 0 {
+	renderedAny := false
+	for _, group := range resultGroups {
+		rows := audit.RowsFromResults(group.Results, failuresOnly)
+		if len(rows) == 0 {
+			continue
+		}
+		if renderedAny {
+			fmt.Println()
+		}
+		fmt.Printf("Policy: %s\n", group.Title)
+		fmt.Printf("Checks: %s\n", group.Source)
+		fmt.Print(audit.RenderTable(rows, audit.DefaultColumns()))
+		renderedAny = true
+	}
+
+	if !renderedAny {
 		fmt.Println("No deficiencies found.")
 		if !allPassed && failOnDef {
 			return exitCode(1)
@@ -149,7 +180,6 @@ func run() error {
 		return nil
 	}
 
-	fmt.Print(audit.RenderTable(rows, audit.DefaultColumns()))
 	if !allPassed && failOnDef {
 		return exitCode(1)
 	}

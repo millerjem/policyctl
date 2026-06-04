@@ -111,6 +111,33 @@ go run ./cmd/policyctl \
   --region "${AWS_REGION}"
 ```
 
+You can pass more than one check file by repeating `--checks`. The table output is grouped by file, and CAPA example filenames are shown as their policy names:
+
+```bash
+go run ./cmd/policyctl \
+  --checks examples/capa-controllers-checks.govcloud.json \
+  --checks examples/vertex-permission-checks.govcloud.json \
+  --policy-source-arn "arn:${PARTITION}:iam::${ACCOUNT_ID}:role/controllers.cluster-api-provider-aws.sigs.k8s.io" \
+  --region "${AWS_REGION}"
+```
+
+You can also use a comma-separated list:
+
+```bash
+go run ./cmd/policyctl \
+  --checks examples/capa-controllers-checks.govcloud.json,examples/vertex-permission-checks.govcloud.json \
+  --policy-source-arn "arn:${PARTITION}:iam::${ACCOUNT_ID}:role/controllers.cluster-api-provider-aws.sigs.k8s.io" \
+  --region "${AWS_REGION}"
+```
+
+The grouped table starts like this:
+
+```text
+Policy: controllers.cluster-api-provider-aws.sigs.k8s.io
+Checks: examples/capa-controllers-checks.govcloud.json
+╭────────┬ ...
+```
+
 Print only deficiencies for any role by adding `--failures-only`:
 
 ```bash
@@ -133,6 +160,8 @@ do
     --failures-only
 done
 ```
+
+Use the loop above when you want each CAPA check file evaluated against its matching CAPA role. A single `policyctl` invocation applies the same `--policy-source-arn` or `--policy-document` to every `--checks` file passed to that invocation.
 
 ## Go/No-Go Outcome
 

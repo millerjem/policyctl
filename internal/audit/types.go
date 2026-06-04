@@ -22,10 +22,22 @@ type ContextEntry struct {
 	Values []string `json:"values"`
 }
 
+type CheckGroup struct {
+	Title  string
+	Source string
+	Checks []Check
+}
+
 type Result struct {
 	Check                Check
 	Decision             string
 	MissingContextValues []string
+}
+
+type ResultGroup struct {
+	Title   string
+	Source  string
+	Results []Result
 }
 
 type Row struct {
@@ -57,6 +69,15 @@ func IsSatisfied(expected, decision string) bool {
 func AllSatisfied(results []Result) bool {
 	for _, result := range results {
 		if !IsSatisfied(result.Check.Expected, result.Decision) {
+			return false
+		}
+	}
+	return true
+}
+
+func AllGroupsSatisfied(groups []ResultGroup) bool {
+	for _, group := range groups {
+		if !AllSatisfied(group.Results) {
 			return false
 		}
 	}

@@ -4,8 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
+
+var checkFileTitles = map[string]string{
+	"capa-controllers-checks.govcloud.json":   "controllers.cluster-api-provider-aws.sigs.k8s.io",
+	"capa-control-plane-checks.govcloud.json": "control-plane.cluster-api-provider-aws.sigs.k8s.io",
+	"capa-nodes-checks.govcloud.json":         "nodes.cluster-api-provider-aws.sigs.k8s.io",
+}
 
 func LoadChecks(path string, vars map[string]string) ([]Check, error) {
 	data, err := os.ReadFile(path)
@@ -26,6 +33,39 @@ func LoadChecks(path string, vars map[string]string) ([]Check, error) {
 	}
 
 	return checks, nil
+}
+
+func LoadCheckGroup(path string, vars map[string]string) (CheckGroup, error) {
+	checks, err := LoadChecks(path, vars)
+	if err != nil {
+		return CheckGroup{}, err
+	}
+
+	return CheckGroup{
+		Title:  CheckGroupTitle(path),
+		Source: path,
+		Checks: checks,
+	}, nil
+}
+
+func LoadCheckGroups(paths []string, vars map[string]string) ([]CheckGroup, error) {
+	groups := make([]CheckGroup, 0, len(paths))
+	for _, path := range paths {
+		group, err := LoadCheckGroup(path, vars)
+		if err != nil {
+			return nil, err
+		}
+		groups = append(groups, group)
+	}
+	return groups, nil
+}
+
+func CheckGroupTitle(path string) string {
+	base := filepath.Base(path)
+	if title, ok := checkFileTitles[base]; ok {
+		return title
+	}
+	return base
 }
 
 func ExpandCheck(check Check, vars map[string]string) Check {

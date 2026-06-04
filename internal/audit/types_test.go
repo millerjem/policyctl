@@ -40,3 +40,29 @@ func TestAllSatisfied(t *testing.T) {
 		t.Fatal("AllSatisfied returned true with a failing result")
 	}
 }
+
+func TestAllGroupsSatisfied(t *testing.T) {
+	groups := []ResultGroup{
+		{
+			Title: "one",
+			Results: []Result{
+				{Check: Check{Expected: "allowed"}, Decision: "allowed"},
+			},
+		},
+		{
+			Title: "two",
+			Results: []Result{
+				{Check: Check{Expected: "denied"}, Decision: "implicitDeny"},
+			},
+		},
+	}
+
+	if !AllGroupsSatisfied(groups) {
+		t.Fatal("AllGroupsSatisfied returned false for all passing groups")
+	}
+
+	groups[1].Results = append(groups[1].Results, Result{Check: Check{Expected: "allowed"}, Decision: "implicitDeny"})
+	if AllGroupsSatisfied(groups) {
+		t.Fatal("AllGroupsSatisfied returned true with a failing group")
+	}
+}

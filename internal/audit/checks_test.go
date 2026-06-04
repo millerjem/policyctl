@@ -48,3 +48,35 @@ func TestExampleChecksLoad(t *testing.T) {
 		})
 	}
 }
+
+func TestCheckGroupTitle(t *testing.T) {
+	tests := []struct {
+		path string
+		want string
+	}{
+		{
+			path: "../../examples/capa-controllers-checks.govcloud.json",
+			want: "controllers.cluster-api-provider-aws.sigs.k8s.io",
+		},
+		{
+			path: "../../examples/capa-control-plane-checks.govcloud.json",
+			want: "control-plane.cluster-api-provider-aws.sigs.k8s.io",
+		},
+		{
+			path: "../../examples/capa-nodes-checks.govcloud.json",
+			want: "nodes.cluster-api-provider-aws.sigs.k8s.io",
+		},
+		{
+			path: "/tmp/custom-checks.json",
+			want: "custom-checks.json",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.want, func(t *testing.T) {
+			if got := CheckGroupTitle(test.path); got != test.want {
+				t.Fatalf("CheckGroupTitle(%q) = %q, want %q", test.path, got, test.want)
+			}
+		})
+	}
+}
