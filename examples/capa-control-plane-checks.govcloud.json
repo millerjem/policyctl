@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Control plane describes autoscaling groups",
+    "action": "autoscaling:DescribeAutoScalingGroups",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "Control plane creates EBS volumes",
+    "action": "ec2:CreateVolume",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "Control plane creates load balancers",
+    "action": "elasticloadbalancing:CreateLoadBalancer",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "Control plane creates service-linked roles",
+    "action": "iam:CreateServiceLinkedRole",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "Control plane describes KMS keys",
+    "action": "kms:DescribeKey",
+    "resource": "*",
+    "expected": "allowed"
+  }
+]

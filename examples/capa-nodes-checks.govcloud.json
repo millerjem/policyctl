@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Nodes describe EC2 instances",
+    "action": "ec2:DescribeInstances",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "Nodes get ECR authorization token",
+    "action": "ecr:GetAuthorizationToken",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "Nodes pull ECR images",
+    "action": "ecr:BatchGetImage",
+    "resource": "arn:${PARTITION}:ecr:${REGION}:${ACCOUNT_ID}:repository/example",
+    "expected": "allowed"
+  },
+  {
+    "name": "Nodes read Cluster API secret",
+    "action": "secretsmanager:GetSecretValue",
+    "resource": "arn:${PARTITION}:secretsmanager:${REGION}:${ACCOUNT_ID}:secret:aws.cluster.x-k8s.io/example",
+    "expected": "allowed"
+  },
+  {
+    "name": "Nodes update SSM inventory",
+    "action": "ssm:UpdateInstanceInformation",
+    "resource": "*",
+    "expected": "allowed"
+  }
+]

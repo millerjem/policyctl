@@ -1,0 +1,32 @@
+[
+  {
+    "name": "CAPA controller describes subnets",
+    "action": "ec2:DescribeSubnets",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "CAPA controller runs EC2 instances",
+    "action": "ec2:RunInstances",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "CAPA controller creates autoscaling groups",
+    "action": "autoscaling:CreateAutoScalingGroup",
+    "resource": "arn:${PARTITION}:autoscaling:${REGION}:${ACCOUNT_ID}:autoScalingGroup:*:autoScalingGroupName/capa-example",
+    "expected": "allowed"
+  },
+  {
+    "name": "CAPA controller passes CAPA roles",
+    "action": "iam:PassRole",
+    "resource": "arn:${PARTITION}:iam::${ACCOUNT_ID}:role/control-plane.cluster-api-provider-aws.sigs.k8s.io",
+    "expected": "allowed"
+  },
+  {
+    "name": "CAPA controller creates cluster secret",
+    "action": "secretsmanager:CreateSecret",
+    "resource": "arn:${PARTITION}:secretsmanager:${REGION}:${ACCOUNT_ID}:secret:aws.cluster.x-k8s.io/example",
+    "expected": "allowed"
+  }
+]
