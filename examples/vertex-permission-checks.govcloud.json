@@ -1,0 +1,152 @@
+[
+  {
+    "name": "KMS decrypt on Vertex key",
+    "action": "kms:Decrypt",
+    "resource": "arn:${PARTITION}:kms:${REGION}:${ACCOUNT_ID}:key/11111111-2222-3333-4444-555555555555",
+    "expected": "allowed"
+  },
+  {
+    "name": "CloudWatch metric publish",
+    "action": "cloudwatch:PutMetricData",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "X-Ray telemetry",
+    "action": "xray:PutTelemetryRecords",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "SQS receive on Vertex queue",
+    "action": "sqs:ReceiveMessage",
+    "resource": "arn:${PARTITION}:sqs:${REGION}:${ACCOUNT_ID}:vertex-control-plane",
+    "expected": "allowed"
+  },
+  {
+    "name": "DynamoDB leader registry update",
+    "action": "dynamodb:UpdateItem",
+    "resource": "arn:${PARTITION}:dynamodb:${REGION}:${ACCOUNT_ID}:table/vertex-prod-AWSEBWorkerCronLeaderRegistry",
+    "expected": "allowed"
+  },
+  {
+    "name": "Vertex log stream write",
+    "action": "logs:PutLogEvents",
+    "resource": "arn:${PARTITION}:logs:${REGION}:${ACCOUNT_ID}:log-group:/aws/spectrocloud/vertex/cluster",
+    "expected": "allowed"
+  },
+  {
+    "name": "CloudTrail logs remain denied",
+    "action": "logs:GetLogEvents",
+    "resource": "arn:${PARTITION}:logs:${REGION}:${ACCOUNT_ID}:log-group:CloudtrailSensitive",
+    "expected": "denied"
+  },
+  {
+    "name": "RDS describe Vertex DB",
+    "action": "rds:DescribeDBInstances",
+    "resource": "arn:${PARTITION}:rds:${REGION}:${ACCOUNT_ID}:db:vertex-primary",
+    "expected": "allowed"
+  },
+  {
+    "name": "Read Vertex instance profile",
+    "action": "iam:GetInstanceProfile",
+    "resource": "arn:${PARTITION}:iam::${ACCOUNT_ID}:instance-profile/vertex-workers",
+    "expected": "allowed"
+  },
+  {
+    "name": "Assume elastic logstash role",
+    "action": "sts:AssumeRole",
+    "resource": "arn:${PARTITION}:iam::${ACCOUNT_ID}:role/elastic-logstash-sqs",
+    "expected": "allowed"
+  },
+  {
+    "name": "ECS start task",
+    "action": "ecs:StartTask",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "ECR describe Vertex repo images",
+    "action": "ecr:DescribeImages",
+    "resource": "arn:${PARTITION}:ecr:${REGION}:${ACCOUNT_ID}:repository/vertex/agent",
+    "expected": "allowed"
+  },
+  {
+    "name": "EC2 describe subnets",
+    "action": "ec2:DescribeSubnets",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "Tagged secret read",
+    "action": "secretsmanager:GetSecretValue",
+    "resource": "arn:${PARTITION}:secretsmanager:${REGION}:${ACCOUNT_ID}:secret:vertex/db-password",
+    "expected": "allowed"
+  },
+  {
+    "name": "EC2 messages reply",
+    "action": "ec2messages:SendReply",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "SSM parameter read",
+    "action": "ssm:GetParameter",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "Vertex object write",
+    "action": "s3:PutObject",
+    "resource": "arn:${PARTITION}:s3:::vertex-artifacts/cluster/bootstrap.sh",
+    "expected": "allowed"
+  },
+  {
+    "name": "Restricted CloudTrail bucket denied",
+    "action": "s3:GetObject",
+    "resource": "arn:${PARTITION}:s3:::cloudtrail-audit/logfile",
+    "expected": "denied"
+  },
+  {
+    "name": "SNS publish to Vertex topic",
+    "action": "sns:Publish",
+    "resource": "arn:${PARTITION}:sns:${REGION}:${ACCOUNT_ID}:vertex-events",
+    "expected": "allowed"
+  },
+  {
+    "name": "Pass ECS task role",
+    "action": "iam:PassRole",
+    "resource": "arn:${PARTITION}:iam::${ACCOUNT_ID}:role/aws-ecs-tasks-role",
+    "expected": "allowed"
+  },
+  {
+    "name": "Describe EFS file systems",
+    "action": "elasticfilesystem:DescribeFileSystems",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "Create EFS access point with cluster tag",
+    "action": "elasticfilesystem:CreateAccessPoint",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "Delete EFS access point with cluster tag",
+    "action": "elasticfilesystem:DeleteAccessPoint",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "SSM messages control channel",
+    "action": "ssmmessages:CreateControlChannel",
+    "resource": "*",
+    "expected": "allowed"
+  },
+  {
+    "name": "ECR pull image",
+    "action": "ecr:BatchGetImage",
+    "resource": "arn:${PARTITION}:ecr:${REGION}:${ACCOUNT_ID}:repository/vertex/agent",
+    "expected": "allowed"
+  }
+]
